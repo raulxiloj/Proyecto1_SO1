@@ -16,27 +16,40 @@ struct task_struct *task_child;     //Estructura para iterar a traves de tareas 
 struct list_head *list;             //Estructura para recorrer la lista de cada tarea-> estructura de hijos 
 
 static int proc_cpu_msg(struct seq_file * file, void *v){
-    seq_printf(file, "[ ");
+    int running = 0, sleeping = 0, zombie = 0, stopped = 0;
+    seq_printf(file, "{\n\"processes\":[ ");
     for_each_process(task){//Marco para iterar a traves de cada tarea en SO
         seq_printf(file, "{");
         seq_printf(file,"\"pid\":%d,\n",task->pid);
         seq_printf(file,"\"name\":\"%s\",\n",task->comm);
         //seq_printf(file, "\"user\": %d\n",task->cred->uid);
-        seq_printf(file,"\"state\":%ld,\n",task->state);
-        seq_printf(file,"\"children:\": [");
-        list_for_each(list, &task->children){//Macro para iterar a traves de la tarea->hijos
-            //seq_printf(file,"{");
-            task_child = list_entry(list, struct task_struct, sibling);
-            seq_printf(file, "%d,", task_child->pid);
-            //seq_printf(file,"\"pid\":%d,",task_child->pid);
-            //seq_printf(file,"\"name\":\"%s\",",task_child->comm);
-            //seq_printf(file,"\"state\":%ld",task_child->state);
-            //seq_printf(file,"},\n");
+        seq_printf(file,"\"state\":%ld\n",task->state);
+        switch(task->state){
+            case 0:
+                running++;
+                break;
+            case 1:
+            case 1026:
+                sleeping++;
+                break;
+            case 4:
+                zombie++;
+                break;
+            case 5:
+                stopped++;
+                break;
+            default:
+                break;
         }
-        seq_printf(file,"]");
         seq_printf(file, "},\n");
     }
-    seq_printf(file, "]\n");
+    seq_printf(file, "],\n");
+    seq_printf(file, "\"running\":%d,\n",running);
+    seq_printf(file, "\"sleeping\":%d,\n",sleeping);
+    seq_printf(file, "\"zombie\":%d,\n",zombie);
+    seq_printf(file, "\"stopped\":%d,\n",stopped);
+    seq_printf(file, "\"total\":%d\n",(running+sleeping+zombie+stopped));
+    seq_printf(file,"}\n");
     return 0;
 }
 
