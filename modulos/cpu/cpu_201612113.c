@@ -15,12 +15,28 @@ struct task_struct *task;           //Estructura definida en sched.h para tareas
 struct task_struct *task_child;     //Estructura para iterar a traves de tareas secundarias
 struct list_head *list;             //Estructura para recorrer la lista de cada tarea-> estructura de hijos 
 
-static int proc_cpu_msg(struct seq_file * archivo, void *v){
-    seq_printf(archivo,"------------------------------------------\n");
-    seq_printf(archivo,"Laboratorio de Sistemas Operativos 1\n");
-    seq_printf(archivo,"Proyecto 1 - Modulo: CPU\n");
-    seq_printf(archivo,"Raul Xiloj\n");
-    seq_printf(archivo,"------------------------------------------\n");
+static int proc_cpu_msg(struct seq_file * file, void *v){
+    seq_printf(file, "[ ");
+    for_each_process(task){//Marco para iterar a traves de cada tarea en SO
+        seq_printf(file, "{");
+        seq_printf(file,"\"pid\":%d,\n",task->pid);
+        seq_printf(file,"\"name\":\"%s\",\n",task->comm);
+        //seq_printf(file, "\"user\": %d\n",task->cred->uid);
+        seq_printf(file,"\"state\":%ld,\n",task->state);
+        seq_printf(file,"\"children:\": [");
+        list_for_each(list, &task->children){//Macro para iterar a traves de la tarea->hijos
+            //seq_printf(file,"{");
+            task_child = list_entry(list, struct task_struct, sibling);
+            seq_printf(file, "%d,", task_child->pid);
+            //seq_printf(file,"\"pid\":%d,",task_child->pid);
+            //seq_printf(file,"\"name\":\"%s\",",task_child->comm);
+            //seq_printf(file,"\"state\":%ld",task_child->state);
+            //seq_printf(file,"},\n");
+        }
+        seq_printf(file,"]");
+        seq_printf(file, "},\n");
+    }
+    seq_printf(file, "]\n");
     return 0;
 }
 
@@ -33,28 +49,19 @@ static struct file_operations ops = {
     .read = seq_read,
 };
 
-static int __init cpu_init_(void){
+static int start(void){
     proc_create("cpu_201612113",0,NULL,&ops);
     printk(KERN_INFO "Cargando modulo...\n");
-    printk(KERN_INFO "201612113 Raul Xiloj\n");
-
-    for_each_process(task){//Marco para iterar a traves de cada tarea en SO
-        printk(KERN_INFO "\n PADRE PID: %d PROCESO: %s ESTADO: %ld",task->pid,task->comm,task->state);
-        list_for_each(list, &task->children){//Macro para iterar a traves de la tarea->hijos
-            task_child = list_entry(list, struct task_struct, sibling);
-            printk(KERN_INFO "\n HIJO DE %s[%d] PID: %d PROCESO: %s ESTADO: %ld",task->comm, task->pid,task_child->pid,task_child->comm, task_child->state);
-        }
-        printk("----------------------------------------------------------------------------------------");
-    }
+    printk(KERN_INFO "Raul Xiloj\n");
     return 0;
 }
 
 
-static void __exit cpu_exit(void){
+static void __exit finish(void){
     remove_proc_entry("cpu_201612113",NULL);
-    printk(KERN_INFO "Removiendo modulo...\n");
+    printk(KERN_INFO "Removiendo modulo cpu...\n");
+    printk(KERN_INFO "Diciembre 2020\n");
 }
 
-module_init(cpu_init_);
-module_exit(cpu_exit);
-
+module_init(start);
+module_exit(finish);
