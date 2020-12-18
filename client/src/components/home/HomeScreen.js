@@ -26,6 +26,16 @@ export const HomeScreen = () => {
         }
     },[processes]);
 
+    const killProcess = async (pid) => {
+        
+        const res = await fetch('http://localhost:8080/kill', {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({pid:pid})
+        });
+        console.log(res)
+    }
+
     const createRows = () => {
         if(processes){
             return (processes.map(process => (
@@ -35,7 +45,7 @@ export const HomeScreen = () => {
                 <td>{process.user}</td>
                 <td>{process.state}</td>
                 <td>
-                    <button className="btn btn-danger">
+                    <button className="btn btn-danger" onClick={() => killProcess(process.pid)}>
                         Kill
                     </button>
                 </td>
