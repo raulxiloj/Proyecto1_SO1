@@ -22,8 +22,16 @@ static int proc_cpu_msg(struct seq_file * file, void *v){
         seq_printf(file, "{");
         seq_printf(file,"\"pid\":%d,\n",task->pid);
         seq_printf(file,"\"name\":\"%s\",\n",task->comm);
-        //seq_printf(file, "\"user\": %d\n",task->cred->uid);
-        seq_printf(file,"\"state\":%ld\n",task->state);
+        seq_printf(file, "\"user\": %d,\n",task->cred->uid);
+        seq_printf(file,"\"state\":%ld,\n",task->state);
+        
+        seq_printf(file,"\"children\":[");
+        list_for_each(list, &task->children){
+            task_child = list_entry(list, struct task_struct, sibling);
+            seq_printf(file,"%d,",task_child->pid);
+        }
+        seq_printf(file,"]");
+
         switch(task->state){
             case 0:
                 running++;
