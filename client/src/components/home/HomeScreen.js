@@ -34,7 +34,6 @@ export const HomeScreen = () => {
                 <td>{process.name}</td>
                 <td>{process.user}</td>
                 <td>{process.state}</td>
-                <td></td>
                 <td>
                     <button className="btn btn-danger">
                         Kill
@@ -88,7 +87,6 @@ export const HomeScreen = () => {
                         <th>Nombre</th>
                         <th>Usuario</th>
                         <th>Estado</th>
-                        <th>%Ram</th>
                         <th>Kill</th>
                     </tr>
                 </thead>
