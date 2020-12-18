@@ -32,7 +32,7 @@ export const HomeScreen = () => {
             <tr key={process.pid}>
                 <td>{process.pid}</td>
                 <td>{process.name}</td>
-                <td></td>
+                <td>{process.user}</td>
                 <td>{process.state}</td>
                 <td></td>
                 <td>
@@ -47,6 +47,8 @@ export const HomeScreen = () => {
 
     return (
         <div className="container mt-4">
+            <h3>Procesos</h3>
+            <hr/>
             <div className="d-flex justify-content-between mb-3">
                 <div className="card">
                     <div className="card-body">
