@@ -1,16 +1,22 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
+
+type requestClient struct {
+	Pid int `json:"pid"`
+}
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -126,10 +132,37 @@ func cpuHandler(w http.ResponseWriter, r *http.Request) {
 	readerCPU(ws)
 }
 
+func killHandler(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Println("PID expected")
+	}
+	var process requestClient
+	json.Unmarshal(reqBody, &process)
+	log.Println("Request:", process.Pid)
+
+	if process.Pid != 0 {
+		cmd := exec.Command("kill", strconv.Itoa(process.Pid))
+		err2 := cmd.Run()
+		if err2 != nil {
+			log.Println("Error killing a process", process.Pid)
+		}
+	}
+
+	w.Write([]byte(string("Nice")))
+}
+
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-ALlow-Headers", "Content-Type")
+}
+
 func main() {
 	http.HandleFunc("/", homePage)
 	http.HandleFunc("/ws", wsHandler)
 	http.HandleFunc("/ws2", cpuHandler)
+	http.HandleFunc("/kill", killHandler)
 	log.Println("Server on port :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
